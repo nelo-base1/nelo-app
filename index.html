@@ -24,6 +24,25 @@
   .center { text-align: center; }
   h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 0.25rem; }
   .sub-text { font-size: 13px; color: var(--color-text-tertiary); margin: 0 0 1.5rem; }
+  .cta-btn {
+    width: 100%; padding: 12px 10px;
+    background: #333; color: #fff;
+    border: none; border-radius: 6px;
+    font-size: 15px; font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s, letter-spacing 0.2s;
+    letter-spacing: 0;
+  }
+  .cta-btn:hover {
+    background: #111;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    letter-spacing: 0.03em;
+  }
+  .cta-btn:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: none;
+  }
 </style>
 
 <div class="wrap" id="app">
@@ -131,7 +150,7 @@ const upsell = `<div style="margin-top:20px;padding:14px;border:1px solid #ddd;b
   <p style="font-size:13px;margin:0 0 8px;">
     あなたの状況に合わせた「もっと具体的な行動プラン」を知りたい方へ
   </p>
-  <button onclick="window.open('https://note.com/nelo_lab/n/neea78203f348', '_blank')" style="width:100%;padding:10px;background:#333;color:#fff;border:none;border-radius:6px;">
+  <button class="cta-btn" onclick="window.open('https://note.com/nelo_lab/n/neea78203f348', '_blank')">
     あなた専用の行動プランを見る（500円）
   </button>
 </div>`;
