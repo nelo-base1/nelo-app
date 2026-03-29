@@ -1,0 +1,214 @@
+
+<style>
+  .wrap { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem; font-family: var(--font-sans); }
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px; margin-bottom: 1rem; }
+  .q-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+  .q-num { font-size: 12px; color: var(--color-text-tertiary); margin: 0 0 6px; }
+  .q-text { font-size: 16px; color: var(--color-text-primary); font-weight: 500; margin: 0 0 1rem; line-height: 1.5; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt-btn { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer; text-align: left; transition: all 0.15s; }
+  .opt-btn:hover { border-color: var(--color-border-secondary); color: var(--color-text-primary); }
+  .opt-btn.selected { background: #EEEDFE; border-color: #AFA9EC; color: #3C3489; }
+  .prog-bar { height: 4px; background: var(--color-background-secondary); border-radius: 2px; margin-bottom: 1.5rem; overflow: hidden; }
+  .prog-fill { height: 100%; background: #7F77DD; border-radius: 2px; transition: width 0.4s ease; }
+  .result-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.5rem; }
+  .result-icon { font-size: 40px; margin-bottom: 0.75rem; text-align: center; }
+  .result-title { font-size: 20px; font-weight: 500; color: var(--color-text-primary); text-align: center; margin: 0 0 0.5rem; }
+  .result-sub { font-size: 13px; text-align: center; margin: 0 0 1.25rem; font-weight: 500; padding: 4px 14px; border-radius: 99px; display: inline-block; }
+  .result-body { font-size: 14px; color: var(--color-text-secondary); line-height: 1.8; }
+  .result-advice { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-top: 1rem; font-size: 13px; color: var(--color-text-secondary); border-left: 3px solid #7F77DD; }
+  .next-btn { display: block; width: 100%; margin-top: 1rem; padding: 12px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 15px; font-weight: 500; color: var(--color-text-primary); cursor: pointer; }
+  .next-btn:hover { background: var(--color-background-secondary); }
+  .next-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .retry-btn { display: block; width: 100%; margin-top: 12px; padding: 10px; background: transparent; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); font-size: 14px; color: var(--color-text-secondary); cursor: pointer; }
+  .center { text-align: center; }
+  h2 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 0.25rem; }
+  .sub-text { font-size: 13px; color: var(--color-text-tertiary); margin: 0 0 1.5rem; }
+</style>
+
+<div class="wrap" id="app">
+  <div id="start-screen">
+    <div class="badge" style="background:#EEEDFE;color:#534AB7;">50代女性のための仕事占い</div>
+    <h2>50代で仕事辞めたい人、ちょっと待って</h2>
+    <p class="sub-text">5つの質問に正直に答えてください。少し辛口ですが、現実を見つめる手助けになります。</p>
+    <div class="q-card" style="border-color: #AFA9EC;">
+      <p style="font-size:14px;color:var(--color-text-secondary);margin:0;line-height:1.8;">
+        転職・退職・起業——選択肢はいろいろ。でも感情だけで決めると後悔することも。<br>自分の状況を客観視するための診断です。
+      </p>
+    </div>
+    <button class="next-btn" onclick="startQuiz()">診断をはじめる →</button>
+  </div>
+
+  <div id="quiz-screen" style="display:none;">
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div id="q-area"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()" disabled>次の質問へ →</button>
+  </div>
+
+  <div id="result-screen" style="display:none;"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    text: "日曜の夜、翌日の仕事を考えたとき、あなたの気持ちは？",
+    opts: [
+      { label: "胃が痛くなる。もう限界に近い", score: 3 },
+      { label: "憂鬱だけど、まあ仕方ない", score: 2 },
+      { label: "少し面倒だが、特に問題ない", score: 1 },
+      { label: "割と楽しみにしていることも多い", score: 0 }
+    ]
+  },
+  {
+    text: "辞めた後の「生活費」について、具体的に計算したことがありますか？",
+    opts: [
+      { label: "試算済み。○ヶ月は問題なく生活できる", score: 0 },
+      { label: "なんとなくはわかっている", score: 1 },
+      { label: "あまり考えていない", score: 2 },
+      { label: "考えると怖くて、あえて見ていない", score: 3 }
+    ]
+  },
+  {
+    text: "「辞めたい」と思い始めたのはいつ頃ですか？",
+    opts: [
+      { label: "3年以上前から継続して思っている", score: 3 },
+      { label: "1〜3年前から。だんだん強くなっている", score: 2 },
+      { label: "ここ半年くらい。最近特に感じる", score: 1 },
+      { label: "最近の出来事がきっかけ。以前は好きだった", score: 0 }
+    ]
+  },
+  {
+    text: "今の職場を離れた後、あなたには何がありますか？",
+    opts: [
+      { label: "具体的なスキル・資格・人脈がある", score: 0 },
+      { label: "やりたいことはあるが、準備はまだ", score: 1 },
+      { label: "特に何もないが、なんとかなると思う", score: 2 },
+      { label: "何もない。でも、もう限界", score: 3 }
+    ]
+  },
+  {
+    text: "あなたが「辞める」ことを一番躊躇させているものは？",
+    opts: [
+      { label: "経済的な不安（収入・老後）", score: 1 },
+      { label: "周囲への迷惑・罪悪感", score: 2 },
+      { label: "次に何をすればいいかわからない", score: 3 },
+      { label: "特にない。もう覚悟はできている", score: 0 }
+    ]
+  }
+];
+
+const results = [
+  {
+    range: [0, 5],
+    icon: "✦",
+    title: "辞める準備ができています",
+    sub: "Go サイン",
+    subStyle: "background:#EAF3DE;color:#3B6D11;",
+    body: "あなたはすでに現実的な判断ができています。生活設計もある程度できており、次のステップへの具体的なイメージも持っている。感情論ではなく、理性的に「辞め時」を判断している人です。\n\nただし——「準備ができている」と「今すぐ辞めるべき」は別の話。辞める前に、雇用保険・退職のタイミング・引き継ぎの段取りを3ヶ月かけて整えることを強くすすめます。",
+    advice: "辞めるなら、後腐れなく。感情的な退職ではなく、計画的な卒業を目指してください。それがあなたの次の職場での評価にも影響します。"
+  },
+  {
+    range: [6, 10],
+    icon: "◈",
+    title: "今はまだ早いかもしれません",
+    sub: "要・準備期間",
+    subStyle: "background:#FAEEDA;color:#633806;",
+    body: "辞めたい気持ちは本物です。でも現状では、「辞める理由」が「辞めた後のビジョン」より大きくなっていませんか？\n\n50代の転職市場は、20〜30代とは別物です。「なんとかなる」は通用しにくい年齢になっている——そのことを直視してください。感情に引っ張られて辞めた後に「こんなはずじゃなかった」は、取り返しが難しい。",
+    advice: "まず6ヶ月だけ、準備期間と決めてみてください。生活費の試算・履歴書の更新・副業や資格の検討。それでも「辞めたい」なら、その気持ちは本物です。"
+  },
+  {
+    range: [11, 15],
+    icon: "◆",
+    title: "辞める前に、立ち止まってください",
+    sub: "要・冷静な検討",
+    subStyle: "background:#FCEBEB;color:#791F1F;",
+    body: "今のあなたは、限界から逃げたい気持ちが先走っている状態です。その気持ちは正直、よくわかります。でも——「逃げるように辞める」ことは、問題を解決しません。\n\n辞めた後の現実（収入の断絶・孤独感・次の仕事が見つからない焦り）に直面したとき、今より辛くなる可能性があります。50代の無職期間は、精神的にも社会的にも想像以上に重い。",
+    advice: "まず一人で抱え込むのをやめてください。信頼できる人間・キャリアカウンセラー・産業医——誰かに話すことが先決です。辞める決断はその後でも遅くありません。"
+  }
+];
+
+const upsell = `<div style="margin-top:20px;padding:14px;border:1px solid #ddd;border-radius:8px;">
+  <p style="font-size:13px;margin:0 0 8px;">
+    あなたの状況に合わせた「もっと具体的な行動プラン」を知りたい方へ
+  </p>
+  <button onclick="alert('ここに有料導線')" style="width:100%;padding:10px;">
+    個別診断を見る（有料）
+  </button>
+</div>`;
+
+let current = 0;
+let scores = [];
+let selected = null;
+
+function startQuiz() {
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[current];
+  const pct = (current / questions.length) * 100;
+  document.getElementById('prog').style.width = pct + '%';
+  selected = null;
+  document.getElementById('next-btn').disabled = true;
+
+  let html = `<div class="q-card">
+    <p class="q-num">質問 ${current + 1} / ${questions.length}</p>
+    <p class="q-text">${q.text}</p>
+    <div class="opts">`;
+  q.opts.forEach((o) => {
+    html += `<button class="opt-btn" onclick="selectOpt(this, ${o.score})">${o.label}</button>`;
+  });
+  html += `</div></div>`;
+  document.getElementById('q-area').innerHTML = html;
+}
+
+function selectOpt(el, score) {
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selected = score;
+  document.getElementById('next-btn').disabled = false;
+}
+
+function nextQ() {
+  if (selected === null) return;
+  scores.push(selected);
+  current++;
+  if (current < questions.length) {
+    renderQ();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const total = scores.reduce((a, b) => a + b, 0);
+  const r = results.find(r => total >= r.range[0] && total <= r.range[1]);
+
+  const bodyLines = r.body.split('\n\n').map(l => `<p style="margin:0 0 0.75rem;">${l}</p>`).join('');
+
+  const html = `
+    <div class="badge" style="background:#EEEDFE;color:#534AB7;">診断結果</div>
+    <div class="result-card">
+      <div class="result-icon">${r.icon}</div>
+      <h2 class="result-title">${r.title}</h2>
+      <div class="center"><span class="result-sub" style="${r.subStyle}">${r.sub}</span></div>
+      <div class="result-body">${bodyLines}</div>
+      <div class="result-advice">${r.advice}</div>
+      ${upsell}
+    </div>
+    <button class="retry-btn" onclick="retry()">もう一度やり直す</button>
+  `;
+  const s = document.getElementById('result-screen');
+  s.innerHTML = html;
+  s.style.display = 'block';
+}
+
+function retry() {
+  current = 0; scores = []; selected = null;
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('start-screen').style.display = 'block';
+}
+</script>
